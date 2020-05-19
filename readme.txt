@@ -1,3 +1,6 @@
+
+Live application can be found at http://simple.cs.pomona.edu:3000/
+
 Installation instructions for Text Simplication Tool on Windows Machine
 
 To set up database MySQL : 
