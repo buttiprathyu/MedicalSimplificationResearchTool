@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Text simplification editor for medical and health-related information</title>
+    <!-- main style sheet -->
+    <link rel="stylesheet" type="text/css" href="simpleStyle.css" />
+    
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="codemirror/lib/codemirror.css">
+    <script src="codemirror/lib/codemirror.js"></script>
+    <script src="codemirror/addon/mode/overlay.js"></script>
+    <script src="codemirror/addon/display/placeholder.js"></script>
+    <script src="codemirror/addon/hint/show-hint.js"></script>
+
+    <!-- Bootstrap -->
+    
+    <link rel="stylesheet" href="bootstrap-4.3.1/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="bootstrap-4.3.1/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+  
+    <!-- Custom CodeMirror Highlighting Mode -->
+	  <script src="simplifyAllMode.js"></script>
+  </head>
+  <body>
+    <div class="container-fluid h-100">
+      <nav class="navbar fixed-top navbar-dark" style="background-image: linear-gradient(15deg, #13547a 0%, #80d0c7 100%);">
+        <a class="navbar-brand" style="color:white; font-weight: bold; font-family: Helvetica;">Text simplification editor for medical and health-related information</a>
+      </nav>
+      
+      <div class="row pt-5 mt-3">
+        <div class="col-9" >
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" onclick="defaultTab()">
+              <a class="nav-link active" href="#simplify" role="tab" data-toggle="tab">Simplification</a>
+            </li>
+            <li class="nav-item" onclick="getRevisedStats()">
+              <a class="nav-link" href="#stats" role="tab" data-toggle="tab">Statistics</a>
+            </li>
+            <li class="nav-item" onclick="getExactLexicalChains()">
+              <a class="nav-link" href="#exactLexical" role="tab" data-toggle="tab">Lexical Chains</a>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane show in active" id="simplify">
+              <div id="codeMirrorBox">
+                  <!-- Code Mirror Editor loads into this box -->
+              </div>
+              <div class="row" style="float: left; width: 103.75%;">
+                <div class="col-12 ml-2 mt-3" >
+                  <div id="sentenceBox" class="col-12" style="min-height: 100px; background-color:#88D0DA;">
+                    <div class="side-heading">Sentence Level suggestions: </div>
+                    <div id="infoBox"></div>
+                  </div>
+                </div>
+                <div class="col-12 mt-2">
+                  <div id="buttonsBox">
+                    <div class="btn-group p-2" role="group">
+                      <button type="button" id="simplifyBtn" class="btn btn-info simplify" onclick="simplify()">Simplify Text</button>
+                    </div>
+                    <div class="btn-group p-2" role="group">
+                      <button type="button" id="clearBtn" class="btn btn-info clear" onclick="clear()">Clear</button>
+                    </div>
+                    <div class="btn-group p-2" role="group">
+                      <button type="button" id="undoBtn" class="btn btn-info undo" onclick="editor.undo()">Undo</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="stats">
+              <div class="justify-content-center mt-5 ml-5" id="infoMsg">
+                  Statistics will be displayed once the text is simplified.
+              </div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="exactLexical">
+              <div class="justify-content-center mt-5 ml-5" id="infoMsg1">
+                  Lexical Chains will be displayed once the text is simplified.
+              </div>
+              <div class="justify-content-center mt-5 ml-1 border border-info p-4" id="textArea1">
+              </div>
+            </div>
+          </div>
+          <div class="loading">Loading...</div>
+          <!-- <div class="d-flex justify-content-center">
+            <div class="spinner-border text-info" style="display:none; width: 3rem; height: 3rem;" id="loader" role="status" >
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div> -->
+        </div>
+        <div class="col-3 mt-3" id="radioBoxes" style="display: none;">
+          <div class="py-2 side-heading"> Types of Lexical Chains: </div>
+          <div class="custom-control custom-radio">
+            <input type="radio" id="customRadio1" name="customRadio" class="custom-control-input" checked onclick="getExactLexicalChains()">
+            <label class="custom-control-label" for="customRadio1">Exact Lexical Chain</label>
+          </div>
+          <div class="custom-control custom-radio">
+            <input type="radio" id="customRadio2" name="customRadio" class="custom-control-input" onclick="getSynonymousLexicalChains()">
+            <label class="custom-control-label" for="customRadio2">Synonymous Lexical Chains</label>
+          </div>
+          <div class="custom-control custom-radio">
+            <input type="radio" id="customRadio3" name="customRadio" class="custom-control-input" onclick="getSemanticLexicalChains()">
+            <label class="custom-control-label" for="customRadio3">Semantic Lexical Chains</label>
+          </div>
+          <table class="table table-bordered mt-3" id="chainStats">
+            <thead>
+              <tr>
+                <th scope="col">Property</th>
+                <th scope="col">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Number of Lexical Chains</td>
+                <td id="lexChain">0</td>
+              </tr>
+              <tr>
+                <td>Average Chain Length</td>
+                <td id="avgChainLen">0</td>
+              </tr>
+              <tr>
+                <td>Average Chain Span</td>
+                <td id="avgChainCount">0</td>
+              </tr>
+              <tr>
+                <td>Number of Cross Chains</td>
+                <td id="crossChain">0</td>
+              </tr>
+              <tr>
+                <td>Number of Half-Document-Length Chains</td>
+                <td id="hdlChain">0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col-3 mt-3" id="statisticsBox">
+          <div class="hide">
+              <p class="heading hide">Original Text</p>
+              <p class="category hide">Word Count:
+                <span class="original-wc hide"></span><br>
+                  Average Word Frequency:
+                <span class="original-wf hide"></span>
+              </p>
+              
+              <p class="heading hide">Simplified Text</p>
+              <p class="category hide">Word Count:
+                <span class="revised-wc hide"></span><br>
+                  Average Word Frequency:
+                <span class="revised-wf hide"></span>
+              </p>
+              <p class="heading hide">Session Information</p>
+              <p>
+                <span class="info1 hide"><b>ID: </b><br></span>
+                <span class="info2 hide"><b>Text ID: </b></span>
+              </p>
+          </div>
+          <div class="py-2 side-heading"> Synonym Suggestions: </div>
+          
+          <div class="form-check" data-toggle="tooltip" title="WordNet is a lexical database for the English language and helps in suggesting synonyms.">
+            <input type="checkbox" class="form-check-input" id="wordnetCheck" checked>
+            <label style="color:Blue;" class="form-check-label" for="exampleCheck1">Wordnet</label>
+          </div>
+
+          <div class="form-check" data-toggle="tooltip" title="Unified Medical Language System (UMLS) is a collection of many controlled vocabularies in the biomedical sciences and helps in suggesting synonyms.">
+            <input type="checkbox" class="form-check-input" id="UMLSCheck" checked>
+            <label style="color:Green" class="form-check-label" for="exampleCheck2">UMLS</label>
+          </div>
+
+          <div class="form-check" data-toggle="tooltip" title="Negation suggests synonyms to the user by transforming the word to a more positive tone. E.g. abnormal might be translated to not normal.">
+            <input type="checkbox" class="form-check-input" id="negationCheck" checked>
+            <label style="color:Purple" class="form-check-label" for="exampleCheck3">Negation</label>
+          </div>
+
+          <div class="py-2 side-heading"> Other word-level suggestions:</div>
+
+          <div class="form-check" data-toggle="tooltip" title="Nominals suggests to replace any noun form in the text to verb form.">
+            <input type="checkbox" class="form-check-input" id="nominalCheck" checked>
+            <label class="form-check-label" for="exampleCheck4">Get verb forms</label>
+          </div>
+
+          <div class="form-check" data-toggle="tooltip" title="Affixes suggests meaning of the dificult word based on the affixes present.">
+            <input type="checkbox" class="form-check-input" id="affixCheck" checked>
+            <label class="form-check-label" for="exampleCheck4">Get underlying meaning</label>
+          </div>
+
+          <div class="py-2 side-heading">Amount of Suggestions:</div>
+          <div class="slidecontainer">
+            <label class="category" for="formControlRange">Word suggestion level: <span class="category" id="freqLevel">10</span> </label>
+            <input type="range" min="0" max="11" value="10" class="slider" id="freqAdjustSlider">
+            <span class="sliderText" style="float:left;" data-toggle="tooltip" title="If you slide towards more - Most of the words will be simplified.">More </span>
+            <span class="sliderText" style="float:right;" data-toggle="tooltip" title="If you slide towards less - Only fewer words will be simplified.">Less&nbsp;&nbsp;</span>
+          </div>
+        </div>
+        <div class="col-3 mt-3" id="wordsBox" style="display:none;">
+          <div class="py-2 side-heading">Legend: </div>
+          <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Property</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">1</th>
+                  <td>Word Frequency </td>
+                  <td>A higher frequency indicates you used simpler words</td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>Noun Count</td>
+                  <td>Replacing the nouns with verbs where possible as a lower noun count is better</td>
+                </tr>
+                <tr>
+                  <th scope="row">3</th>
+                  <td>Verb Count</td>
+                  <td>Replacing verbs with nouns where possible as a higher verb count is better</td>
+                </tr>
+              </tbody>
+            </table>
+        </div> 
+      </div>
+    </div>
+    <script> 
+        $(document).ready(function() { 
+            $('[data-toggle="tooltip"]').tooltip();    
+        }); 
+    </script>
+    <script src="script.js"></script>
+  </body>
+</html>
